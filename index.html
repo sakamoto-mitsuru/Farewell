@@ -13,26 +13,28 @@
   body{background:var(--portrait-panel);color:var(--portrait-ink);
     font-family:"Hiragino Kaku Gothic ProN","Yu Gothic Medium","Yu Gothic","Noto Sans JP",system-ui,sans-serif;
     font-size:15px;line-height:1.7;padding:24px 16px 56px}
-  .portrait-wizard__shell{width:100%;max-width:720px;margin:0 auto}
+  .portrait-wizard__shell{width:100%;max-width:760px;margin:0 auto;display:grid;gap:12px}
 
-  .portrait-wizard__header{display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+  .portrait-wizard__header{display:grid;grid-template-columns:minmax(0,1fr) auto;
+    gap:8px 16px;align-items:center}
   .portrait-wizard__title{font-size:18px;font-weight:600;line-height:1.45}
-  .portrait-wizard__lead{color:var(--portrait-muted);font-size:12px;line-height:1.65}
+  .portrait-wizard__lead{grid-column:1;color:var(--portrait-muted);font-size:12px;line-height:1.65}
+  @media(max-width:640px){
+    .portrait-wizard__header{grid-template-columns:minmax(0,1fr)}
+    .portrait-wizard__lead{grid-row:3}
+  }
 
   .portrait-wizard__phone{display:flex;flex-direction:column;gap:12px}
-  .portrait-wizard__phone-header{display:flex;flex-direction:column;gap:12px;padding:16px;
-    border:1px solid var(--portrait-line);border-radius:var(--portrait-radius-card);
-    background:#fff;box-shadow:0 1px 2px rgba(58,50,40,.08)}
-  .chapter{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
-  .chapter b{font-size:12px;font-weight:600}
-  .chapter span{color:var(--portrait-muted);font-size:11px}
+  .portrait-wizard__phone-header{grid-row:1;grid-column:2;justify-self:end}
+  @media(max-width:640px){.portrait-wizard__phone-header{grid-column:1;grid-row:2;justify-self:start}}
 
-  .portrait-steps{display:grid;gap:8px}
-  .portrait-step{display:grid;gap:5px;justify-items:center;
-    color:var(--portrait-line-strong);font-size:10px;line-height:1.4;text-align:center}
-  .portrait-step__dot{display:grid;width:24px;height:24px;place-items:center;
+  .portrait-steps{display:flex;gap:6px;align-items:center}
+  .portrait-step{display:grid;gap:2px;justify-items:center;
+    color:var(--portrait-line-strong);font-size:9px;line-height:1.25;text-align:center;
+    min-width:34px}
+  .portrait-step__dot{display:grid;width:20px;height:20px;place-items:center;
     border:1px solid var(--portrait-line-strong);border-radius:var(--portrait-radius-pill);
-    background:#fff;font-size:11px;font-weight:700}
+    background:#fff;font-size:9.5px;font-weight:700}
   .portrait-step--active,.portrait-step--done{color:var(--portrait-primary-dark)}
   .portrait-step--active .portrait-step__dot,
   .portrait-step--done .portrait-step__dot{
@@ -142,17 +144,13 @@
 
 <div class="portrait-wizard__shell">
   <div class="portrait-wizard__header">
-    <h1 class="portrait-wizard__title">高精細遺影仕上げ</h1>
-    <p class="portrait-wizard__lead" id="lead"></p>
-  </div>
-
-  <div class="portrait-wizard__phone">
+    <h1 class="portrait-wizard__title" id="pageTitle">高精細遺影仕上げ</h1>
     <div class="portrait-wizard__phone-header" id="stepHeader">
-      <div class="chapter"><b id="chapterName"></b><span id="chapterSub"></span></div>
       <div class="portrait-steps" id="steps"></div>
     </div>
-    <div id="body"></div>
+    <p class="portrait-wizard__lead" id="lead"></p>
   </div>
+  <div id="body"></div>
 </div>
 
 <script>
@@ -303,14 +301,11 @@ function altarStage(altarId,coffinId){
 /* ---------- ステップ ---------- */
 function renderSteps(){
   const list=S.chapter===1?CH1:CH2;
-  $('#steps').style.gridTemplateColumns=`repeat(${list.length},1fr)`;
   $('#steps').innerHTML='';
   list.forEach((st,i)=>$('#steps').append(el(
     `<div class="portrait-step ${i===S.step?'portrait-step--active':''} ${i<S.step?'portrait-step--done':''}">
      <span class="portrait-step__dot">${i<S.step?'✓':i+1}</span><span>${st.short}</span></div>`)));
-  $('#chapterName').textContent=S.chapter===1?'第1部　遺影':'第2部　旅立ちの装い';
-  $('#chapterSub').textContent=S.chapter===1
-    ?'お写真から3案を仕上げ、1案を確定します':'確定した遺影から、お姿・装い・お棺・祭壇へ';
+  $('#pageTitle').textContent=S.chapter===1?'高精細遺影仕上げ':'旅立ちの装い';
   $('#lead').textContent=S.chapter===1
     ?'お写真を選び、背景と服装を選ぶだけで、3案を同時に仕上げます。'
     :'確定したお写真をもとに、お姿を描き、装い・お棺・祭壇までご覧いただけます。';
