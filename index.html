@@ -12,8 +12,11 @@
   *{box-sizing:border-box;margin:0;padding:0}
   body{background:var(--portrait-panel);color:var(--portrait-ink);
     font-family:"Hiragino Kaku Gothic ProN","Yu Gothic Medium","Yu Gothic","Noto Sans JP",system-ui,sans-serif;
-    font-size:15px;line-height:1.7;padding:24px 16px 56px}
-  .portrait-wizard__shell{width:100%;max-width:760px;margin:0 auto;display:grid;gap:12px}
+    font-size:15px;line-height:1.7;padding:16px 16px 20px}
+  .portrait-wizard__shell{width:100%;max-width:760px;height:calc(100vh - 36px);
+    margin:0 auto;display:grid;grid-template-rows:auto minmax(0,1fr);gap:10px}
+  @media (max-height:640px){.portrait-wizard__shell{height:auto;min-height:0}}
+  #body{min-height:0;display:grid}
 
   .portrait-wizard__header{display:grid;grid-template-columns:minmax(0,1fr) auto;
     gap:8px 16px;align-items:center}
@@ -40,9 +43,21 @@
   .portrait-step--done .portrait-step__dot{
     border-color:var(--portrait-primary);background:var(--portrait-primary);color:#fff}
 
-  .portrait-panel{display:grid;gap:14px;border:1px solid var(--portrait-line);
-    border-radius:var(--portrait-radius-card);background:#fff;padding:16px;
-    box-shadow:0 1px 2px rgba(58,50,40,.08)}
+  .portrait-panel{display:grid;gap:12px;border:1px solid var(--portrait-line);
+    border-radius:var(--portrait-radius-card);background:#fff;padding:14px 16px;
+    box-shadow:0 1px 2px rgba(58,50,40,.08);
+    grid-template-rows:auto minmax(0,1fr) auto;min-height:0}
+  /* 伸縮する段：絵。ここだけが残りの高さを取る */
+  .portrait-panel > .viewbox{min-height:0;align-self:stretch}
+  /* 下部に固まる段：選択メニューと操作 */
+  .portrait-panel > .foot{display:grid;gap:10px;align-self:end}
+  /* サムネイルは縦の余りに応じて縮む。比率は保ち、上限だけを画面高に連動させる */
+  .portrait-option--tall img,
+  .portrait-option--body img,
+  .portrait-option--samp img{max-height:min(11vh,110px)}
+  .portrait-option--wide img,
+  .portrait-option--flat img{max-height:min(8vh,80px)}
+  .portrait-panel > .ask-body{display:grid;gap:12px;align-content:start;min-height:0}
   .portrait-panel__topline{display:flex;justify-content:space-between;gap:12px;align-items:baseline}
   .portrait-panel__label{font-size:13px;font-weight:600;line-height:1.5}
   .portrait-panel__note{color:var(--portrait-muted);font-size:12px;line-height:1.7}
@@ -67,11 +82,11 @@
   .portrait-option--selected{border-color:var(--portrait-primary);background:var(--portrait-primary-soft)}
   .portrait-option:focus-visible{outline:2px solid var(--portrait-line-strong);outline-offset:2px}
   .portrait-option--plain{min-height:44px;align-content:center;padding:10px 8px}
-  .portrait-option img{display:block;width:100%;background:var(--portrait-panel);
-    border-radius:calc(var(--portrait-radius-card) - 5px)}
-  .portrait-option--tall img{aspect-ratio:4/5;object-fit:cover}
-  .portrait-option--body img{aspect-ratio:3/4;object-fit:cover;object-position:center 20%}
-  .portrait-option--samp img{aspect-ratio:2/3;object-fit:cover}
+  .portrait-option img{display:block;width:100%;margin:0 auto;
+    background:var(--portrait-panel);border-radius:calc(var(--portrait-radius-card) - 5px)}
+  .portrait-option--tall img{aspect-ratio:4/5;object-fit:contain}
+  .portrait-option--body img{aspect-ratio:3/4;object-fit:contain}
+  .portrait-option--samp img{aspect-ratio:2/3;object-fit:contain}
   .portrait-option--wide img{aspect-ratio:3/2;object-fit:cover}
   .portrait-option--flat img{aspect-ratio:3/2;object-fit:contain}
   .portrait-option__title{font-size:12px;font-weight:600;line-height:1.4}
@@ -89,9 +104,15 @@
 
   .viewbox{position:relative;display:grid;place-items:center;overflow:hidden;
     border:1px solid var(--portrait-line);border-radius:var(--portrait-radius-card);
-    background:var(--portrait-panel);min-height:220px}
-  .viewbox > img.main{display:block;max-width:100%;max-height:56vh}
-  .viewbox .stage{width:100%}
+    background:var(--portrait-panel);min-height:120px;height:100%}
+  .viewbox > img.main{display:block;max-width:100%;max-height:100%;object-fit:contain}
+  .viewbox--tap{cursor:zoom-in}
+  .viewbox--tap:focus-visible{outline:2px solid var(--portrait-line-strong);outline-offset:2px}
+  .viewbox__hint{position:absolute;right:8px;bottom:8px;
+    border-radius:var(--portrait-radius-pill);background:rgba(255,255,255,.9);
+    color:var(--portrait-muted);font-size:11px;padding:4px 10px;pointer-events:none}
+  .viewbox .stage{width:100%;max-height:100%}
+  .viewbox .stage img.plate{max-height:100%;width:auto;margin:0 auto}
   .stage{position:relative;width:100%;overflow:hidden;border-radius:var(--portrait-radius-card)}
   .stage img.plate{display:block;width:100%}
   .stage.blurred img.plate{filter:blur(16px) saturate(.8);transform:scale(1.06)}
@@ -139,6 +160,16 @@
     border:1px solid var(--portrait-line);border-radius:var(--portrait-radius-card);padding:10px 12px}
   .summary-row__label{color:var(--portrait-muted);font-size:11px;font-weight:600}
   .summary-row__value{font-size:13px;font-weight:600}
+  .lightbox{position:fixed;inset:0;z-index:80;display:grid;place-items:center;
+    background:rgba(35,32,28,.88);padding:24px}
+  .lightbox__inner{max-width:100%;max-height:100%;display:grid;place-items:center}
+  .lightbox img{display:block;max-width:100%;max-height:calc(100vh - 48px);object-fit:contain;
+    border-radius:var(--portrait-radius-card)}
+  .lightbox .stage{width:min(96vw,1100px)}
+  .lightbox__close{position:fixed;top:16px;right:16px;min-width:44px;min-height:44px;
+    border:0;border-radius:var(--portrait-radius-pill);background:rgba(255,255,255,.92);
+    color:var(--portrait-ink);cursor:pointer;font:inherit;font-size:18px;line-height:1}
+  .lightbox__close:focus-visible{outline:2px solid #fff;outline-offset:2px}
   [hidden]{display:none !important}
 </style>
 
@@ -233,7 +264,21 @@ function optionCard({img,title,selected,cls,onClick}){
 function panel(label,...nodes){
   const p=el(`<div class="portrait-panel"><div class="portrait-panel__topline">
     <span class="portrait-panel__label">${label}</span></div></div>`);
-  nodes.filter(Boolean).forEach(n=>p.append(n));
+  const list=nodes.filter(Boolean);
+  // 絵（.viewbox / .single / .done-mark を含む先頭側）は伸縮段へ、
+  // それ以外（選択・注記・操作）は下部の固定段へまとめる。
+  const view=list.find(n=>n.classList && n.classList.contains('viewbox'));
+  const foot=el('<div class="foot"></div>');
+  if(view){
+    p.append(view);
+    list.filter(n=>n!==view).forEach(n=>foot.append(n));
+  }else{
+    // 絵のない画面（ご様子の質問など）。中身は上から順に積み、余れば下に空きを残す
+    const filler=el('<div class="ask-body"></div>');
+    list.forEach(n=>filler.append(n));
+    p.append(filler);
+  }
+  p.append(foot);
   return p;
 }
 function note(t){const p=document.createElement('p');p.className='portrait-panel__note';p.innerHTML=t;return p;}
@@ -251,11 +296,35 @@ function actions(primary,secondary){
   return w;
 }
 /* 見せ場：中身＋描き中のオーバーレイ */
-function view(inner){
+function view(inner, makeFull){
   const v=el('<div class="viewbox"></div>');
   v.append(inner);
-  const o=drawingOverlay(); if(o) v.append(o);
+  const o=drawingOverlay();
+  if(o){ v.append(o); return v; }
+  if(makeFull){
+    v.classList.add('viewbox--tap');
+    v.tabIndex=0; v.setAttribute('role','button');
+    v.setAttribute('aria-label','大きく見る');
+    v.append(el('<span class="viewbox__hint">タップで大きく</span>'));
+    const open=()=>openLightbox(makeFull);
+    v.onclick=open;
+    v.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open();}};
+  }
   return v;
+}
+
+function openLightbox(makeNode){
+  const lb=el('<div class="lightbox" role="dialog" aria-modal="true" aria-label="拡大表示">'+
+    '<div class="lightbox__inner"></div>'+
+    '<button type="button" class="lightbox__close" aria-label="閉じる">×</button></div>');
+  lb.querySelector('.lightbox__inner').append(makeNode());
+  const close=()=>{lb.remove();document.removeEventListener('keydown',esc);};
+  const esc=e=>{if(e.key==='Escape')close();};
+  lb.querySelector('.lightbox__close').onclick=close;
+  lb.onclick=e=>{if(e.target===lb)close();};
+  document.addEventListener('keydown',esc);
+  document.body.append(lb);
+  lb.querySelector('.lightbox__close').focus();
 }
 function wearImg(id){ return S.pose==='sit' ? A.wearSit[id] : A.wear[id]; }
 function blurPlate(altarId){
@@ -325,7 +394,7 @@ function screen(){
 
   if(id==='photo'){
     b.append(panel('加工したい写真を選択してください',
-      view(img(A.origin)),
+      view(img(A.origin), ()=>img(A.origin)),
       note('顔と肩がガイドに合うように調整してください。'),
       actions({label:'次へ進む',onClick:()=>go(1)})));
   }
@@ -359,14 +428,15 @@ function screen(){
         const prev=VARIANTS[S.variant].img; S.variant=i;
         draw('お写真を差し替えています',()=>img(A[prev]),()=>render());}})));
     b.append(panel('仕上がりをご確認ください',
-      view(img(A[VARIANTS[S.variant].img])), g, note(VARIANTS[S.variant].label),
+      view(img(A[VARIANTS[S.variant].img]), ()=>img(A[VARIANTS[S.variant].img])), g,
+      note(VARIANTS[S.variant].label),
       actions({label:'この案で確定する',onClick:()=>go(1)},
               {label:'もう一度作成する',onClick:()=>go(-2)})));
   }
   if(id==='confirm'){
     b.append(panel('確定しました',
       el('<div class="done-mark">✓</div>'),
-      view(img(A[VARIANTS[S.variant].img])),
+      view(img(A[VARIANTS[S.variant].img]), ()=>img(A[VARIANTS[S.variant].img])),
       note('訃報ページのプロフィールに設定しました。'),
       el(`<div class="fork"><span class="fork__title">この先もご覧いただけます</span>
         <p class="portrait-panel__note">お姿・装い・お棺・祭壇まで、続けてご覧いただけます。ここまでにすることもできます。</p></div>`),
@@ -406,7 +476,7 @@ function screen(){
   }
   if(id==='figure'){
     b.append(panel('お姿ができあがりました',
-      view(img(A[S.pose])),
+      view(img(A[S.pose]), ()=>img(A[S.pose])),
       note(`${S.height?S.height+'cm・':''}${BUILDS[S.build]}・背筋は${POSTURES[S.posture]}`),
       actions({label:'旅立ちの装いへ進む',onClick:()=>go(1)},
               {label:'ご様子を変えて描き直す',onClick:()=>go(-1)})));
@@ -426,7 +496,7 @@ function screen(){
         g.append(c);
       });
       b.append(panel('旅立ちの装いをお選びください',
-        view(img(A[S.pose])),
+        view(img(A[S.pose]), ()=>img(A[S.pose])),
         section(`仏衣のサンプル（3つまで　${S.wearPicks.length} / 3）`, g),
         note('お選びいただいた3つを、1枚ずつお描きします。'),
         actions({label:'3つの装いを描く',disabled:S.wearPicks.length!==3,
@@ -440,7 +510,7 @@ function screen(){
       selected:S.wear===wi,
       onClick:()=>{if(wi===S.wear)return; S.wear=wi; render();}})));
     b.append(panel('仕上がりをご確認ください',
-      view(img(wearImg(WEARS[S.wear].id))),
+      view(img(wearImg(WEARS[S.wear].id)), ()=>img(wearImg(WEARS[S.wear].id))),
       section('3案', g),
       note('横に並べて見比べられます。'),
       actions({label:'お棺へ進む',onClick:()=>go(1)},
@@ -455,7 +525,8 @@ function screen(){
         const prev=COFFINS[S.coffin].id; S.coffin=i;
         draw('お棺を並べています',()=>coffinStage(WEARS[S.wear].id, prev),()=>render());}})));
     b.append(panel('お棺をお選びください',
-      view(coffinStage(WEARS[S.wear].id, COFFINS[S.coffin].id)),
+      view(coffinStage(WEARS[S.wear].id, COFFINS[S.coffin].id),
+            ()=>coffinStage(WEARS[S.wear].id, COFFINS[S.coffin].id)),
       section('お棺', g),
       note('お顔は映しません。装いとお棺の取り合わせをご覧いただきます。'),
       actions({label:'祭壇へ進む',onClick:()=>go(1)},{label:'戻る',onClick:()=>go(-1)})));
@@ -472,7 +543,9 @@ function screen(){
           ()=>render());}})));
     b.append(panel('祭壇をお選びください',
       view(S.altar===null ? blurPlate(ALTARS[0].id)
-                          : altarStage(ALTARS[S.altar].id, COFFINS[S.coffin].id)),
+                          : altarStage(ALTARS[S.altar].id, COFFINS[S.coffin].id),
+           S.altar===null ? null
+                          : ()=>altarStage(ALTARS[S.altar].id, COFFINS[S.coffin].id)),
       section('祭壇', g),
       note(S.altar===null ? 'お選びいただくと、遺影とお棺を並べてご覧いただけます。'
                           : '遺影とお棺はそのままに、祭壇だけが入れ替わります。'),
@@ -496,7 +569,8 @@ function doneScreen(){
      <div class="summary-row__value">${v}</div></div>`)));
   b.append(panel('完了しました',
     el('<div class="done-mark">✓</div>'),
-    view(S.chapter===2?altarStage(a.id,c.id):img(A[VARIANTS[S.variant].img])),
+    view(S.chapter===2?altarStage(a.id,c.id):img(A[VARIANTS[S.variant].img]),
+         S.chapter===2?()=>altarStage(a.id,c.id):()=>img(A[VARIANTS[S.variant].img])),
     sum, note('続きの作業は、管理画面の「遺影仕上げ」から行えます。'),
     actions({label:'最初から見る',onClick:()=>{
       Object.assign(S,{chapter:1,step:0,done:false,drawing:null,drawBase:null,wearPicks:[],wearMade:false,wear:null,coffin:0,altar:null});render();}})));
